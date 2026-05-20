@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/services'
+import { groupService } from '@services'
 import type { TStudyGroup, TGroupCreate, TGroupUpdate } from '../types'
 
 // Query Keys 
@@ -22,7 +22,7 @@ export const GROUP_QUERY_KEYS = {
 export function useGetGroups(filters?: Record<string, number | boolean>) {
     return useQuery({
         queryKey: GROUP_QUERY_KEYS.list(filters),
-        queryFn: () => api.get<TStudyGroup[]>('/groups', { params: filters }),
+        queryFn: () => groupService.getGroups(filters),
     })
 }
 
@@ -32,7 +32,7 @@ export function useGetGroups(filters?: Record<string, number | boolean>) {
 export function useGetGroup(id: string) {
     return useQuery({
         queryKey: GROUP_QUERY_KEYS.detail(id),
-        queryFn: () => api.get<TStudyGroup>(`/groups/${id}`),
+        queryFn: () => groupService.getGroup(id),
         enabled: !!id,
     })
 }
@@ -44,7 +44,7 @@ export function useCreateGroup() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (data: TGroupCreate) => api.post<TStudyGroup>('/groups', data),
+        mutationFn: (data: TGroupCreate) => groupService.createGroup(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: GROUP_QUERY_KEYS.lists() })
         },
@@ -59,7 +59,7 @@ export function useUpdateGroup() {
 
     return useMutation({
         mutationFn: ({ id, data }: { id: string; data: TGroupUpdate }) =>
-            api.patch<TStudyGroup>(`/groups/${id}`, data),
+            groupService.updateGroup(id, data),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: GROUP_QUERY_KEYS.detail(variables.id) })
             queryClient.invalidateQueries({ queryKey: GROUP_QUERY_KEYS.lists() })
@@ -74,7 +74,7 @@ export function useDeleteGroup() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (id: string) => api.delete(`/groups/${id}`),
+        mutationFn: (id: string) => groupService.deleteGroup(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: GROUP_QUERY_KEYS.lists() })
         },
@@ -88,7 +88,7 @@ export function useJoinGroup() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (id: string) => api.post(`/groups/${id}/join`),
+        mutationFn: (id: string) => groupService.joinGroup(id),
         onSuccess: (_, id) => {
             queryClient.invalidateQueries({ queryKey: GROUP_QUERY_KEYS.detail(id) })
             queryClient.invalidateQueries({ queryKey: GROUP_QUERY_KEYS.lists() })
@@ -103,7 +103,7 @@ export function useLeaveGroup() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (id: string) => api.post(`/groups/${id}/leave`),
+        mutationFn: (id: string) => groupService.leaveGroup(id),
         onSuccess: (_, id) => {
             queryClient.invalidateQueries({ queryKey: GROUP_QUERY_KEYS.detail(id) })
             queryClient.invalidateQueries({ queryKey: GROUP_QUERY_KEYS.lists() })

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useLocalStorage, useId } from '@/hooks/use-local-storage'
+import { useGetTasks, useCreateTask, useUpdateTask, useDeleteTask, useToggleTaskCompletion } from '@entities/task/hooks/use-task-queries'
 import type { Task, StudyStats } from '@/types/organization'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,8 +59,12 @@ const priorityConfig = {
 }
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useLocalStorage<Task[]>('studyhub-tasks', [])
-  const [stats, setStats] = useLocalStorage<StudyStats>('studyhub-stats', {
+  const { data: tasks = [] } = useGetTasks()
+  const createTaskMutation = useCreateTask()
+  const updateTaskMutation = useUpdateTask()
+  const deleteTaskMutation = useDeleteTask()
+  const toggleTaskCompletionMutation = useToggleTaskCompletion()
+  const [, setStats] = useState<StudyStats>({
     totalPomodoros: 0,
     totalMinutes: 0,
     currentStreak: 0,
@@ -73,7 +77,6 @@ export default function TasksPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterPriority, setFilterPriority] = useState<string>('all')
   const [activeTab, setActiveTab] = useState('all')
-  const generateId = useId()
 
   const [formData, setFormData] = useState({
     title: '',
@@ -97,35 +100,18 @@ export default function TasksPage() {
   const handleSaveTask = () => {
     if (!formData.title) return
 
-    const now = new Date().toISOString()
+    const payload = {
+      title: formData.title,
+      description: formData.description || undefined,
+      priority: formData.priority,
+      dueDate: formData.dueDate || undefined,
+      tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : undefined,
+    }
 
     if (editingTask) {
-      setTasks(tasks.map(t =>
-        t.id === editingTask.id
-          ? {
-            ...t,
-            title: formData.title,
-            description: formData.description || undefined,
-            priority: formData.priority,
-            dueDate: formData.dueDate || undefined,
-            tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : undefined,
-            updatedAt: now,
-          }
-          : t
-      ))
+      updateTaskMutation.mutate({ id: editingTask.id, data: payload })
     } else {
-      const newTask: Task = {
-        id: generateId(),
-        title: formData.title,
-        description: formData.description || undefined,
-        completed: false,
-        priority: formData.priority,
-        dueDate: formData.dueDate || undefined,
-        tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : undefined,
-        createdAt: now,
-        updatedAt: now,
-      }
-      setTasks([newTask, ...tasks])
+      createTaskMutation.mutate(payload)
     }
 
     setIsDialogOpen(false)
@@ -145,23 +131,16 @@ export default function TasksPage() {
   }
 
   const handleDeleteTask = (id: string) => {
-    setTasks(tasks.filter(t => t.id !== id))
+    deleteTaskMutation.mutate(id)
   }
 
   const handleToggleComplete = (id: string) => {
     const task = tasks.find(t => t.id === id)
     if (!task) return
 
-    const newCompleted = !task.completed
+    toggleTaskCompletionMutation.mutate({ id, completed: !task.completed })
 
-    setTasks(tasks.map(t =>
-      t.id === id
-        ? { ...t, completed: newCompleted, updatedAt: new Date().toISOString() }
-        : t
-    ))
-
-    // Update stats
-    if (newCompleted) {
+    if (!task.completed) {
       setStats(prev => ({
         ...prev,
         tasksCompleted: prev.tasksCompleted + 1,
@@ -448,7 +427,14 @@ export default function TasksPage() {
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 shrink-0"
+                            aria-label="Mais opções da tarefa"
+                            title="Mais opções"
+                          >
                             <MoreVertical className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>

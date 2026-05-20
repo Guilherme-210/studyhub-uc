@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useLocalStorage } from '@/hooks/use-local-storage'
+import { useLocalStorage } from '@hooks/use-local-storage'
 import type { PomodoroSettings, PomodoroSession, StudyStats } from '@/types/organization'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

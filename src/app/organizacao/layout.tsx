@@ -1,4 +1,4 @@
-import { OrganizationSidebar } from '@/components/organization/sidebar'
+import { OrganizationSidebar } from '@components/organization'
 
 export default function OrganizationLayout({
   children,

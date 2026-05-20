@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
-import { ThemeProvider as NextThemeProvider } from '@/components/theme-provider'
-import { ThemeProvider as MuiThemeProvider, StyledComponentsRegistry } from '@/features/theme'
-import { AuthProvider } from '@/features/auth'
+import { ThemeProvider as NextThemeProvider } from '@components/theme-provider'
+import QueryProvider from '@components/query-provider'
+import { ThemeProvider as MuiThemeProvider, StyledComponentsRegistry, AuthProvider } from '@features'
 import './globals.css'
 
 const inter = Inter({
@@ -59,7 +59,9 @@ export default function RootLayout({
           <StyledComponentsRegistry>
             <MuiThemeProvider>
               <AuthProvider>
-                {children}
+                <QueryProvider>
+                  {children}
+                </QueryProvider>
               </AuthProvider>
             </MuiThemeProvider>
           </StyledComponentsRegistry>

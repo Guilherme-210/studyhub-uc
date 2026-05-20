@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": "./src",
     "lib": [
       "dom",
       "dom.iterable",
@@ -24,37 +25,67 @@
     ],
     "paths": {
       "@/*": [
-        "./src/*"
+        "*"
       ],
       "@app": [
-        "./src/app"
+        "app"
+      ],
+      "@app/*": [
+        "app/*"
       ],
       "@components": [
-        "./src/components"
+        "components"
+      ],
+      "@components/*": [
+        "components/*"
       ],
       "@entities": [
-        "./src/entities"
+        "entities"
+      ],
+      "@entities/*": [
+        "entities/*"
       ],
       "@features": [
-        "./src/features"
+        "features"
+      ],
+      "@features/*": [
+        "features/*"
       ],
       "@hooks": [
-        "./src/hooks"
+        "hooks"
+      ],
+      "@hooks/*": [
+        "hooks/*"
       ],
       "@services": [
-        "./src/services"
+        "services"
+      ],
+      "@services/*": [
+        "services/*"
       ],
       "@shared": [
-        "./src/shared"
+        "shared"
+      ],
+      "@shared/*": [
+        "shared/*"
       ],
       "@constants": [
-        "./src/shared/constants"
+        "shared/constants"
+      ],
+      "@constants/*": [
+        "shared/constants/*"
       ],
       "@utils": [
-        "./src/shared/utils"
+        "shared/utils"
+      ],
+      "@utils/*": [
+        "shared/utils/*"
       ],
       "@types": [
-        "./src/types"
+        "types"
+      ],
+      "@types/*": [
+        "types/*"
       ]
     }
   },

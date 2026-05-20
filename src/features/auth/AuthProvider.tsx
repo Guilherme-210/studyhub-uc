@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import type { TUser, TLoginCredentials, TRegisterData } from './types'
-import { api } from '@/services'
+import { api } from '@services'
 
 type AuthContextType = {
   user: TUser | null

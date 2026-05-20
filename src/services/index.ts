@@ -1,2 +1,6 @@
-export { apiFetch, api } from './api'
+export { apiFetch, api, ApiError, addRequestInterceptor, addResponseInterceptor, addErrorInterceptor, apiInterceptors } from './api'
+export { taskService } from './task'
+export { noteService } from './note'
+export { groupService } from './group'
+export { sessionService } from './session'
 export type { TRequestOptions, TApiError } from './api'

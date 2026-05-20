@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useLocalStorage, useId } from '@/hooks/use-local-storage'
+import { useLocalStorage, useId } from '@hooks/use-local-storage'
 import type { KanbanColumn, KanbanTask } from '@/types/organization'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

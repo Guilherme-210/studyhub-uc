@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/features/auth'
+import { useAuth } from '@features'
 
 type FormValues = {
   email: string

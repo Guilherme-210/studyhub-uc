@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/services'
+import { noteService } from '@services'
 import type { TNote, TNoteCreate, TNoteUpdate } from '../types'
 
 // Query Keys
@@ -22,7 +22,7 @@ export const NOTE_QUERY_KEYS = {
 export function useGetNotes(filters?: Record<string, unknown>) {
     return useQuery({
         queryKey: NOTE_QUERY_KEYS.list(filters),
-        queryFn: () => api.get<TNote[]>('/notes', { params: filters }),
+        queryFn: () => noteService.getNotes(filters),
     })
 }
 
@@ -32,7 +32,7 @@ export function useGetNotes(filters?: Record<string, unknown>) {
 export function useGetNote(id: string) {
     return useQuery({
         queryKey: NOTE_QUERY_KEYS.detail(id),
-        queryFn: () => api.get<TNote>(`/notes/${id}`),
+        queryFn: () => noteService.getNote(id),
         enabled: !!id,
     })
 }
@@ -44,7 +44,7 @@ export function useCreateNote() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (data: TNoteCreate) => api.post<TNote>('/notes', data),
+        mutationFn: (data: TNoteCreate) => noteService.createNote(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: NOTE_QUERY_KEYS.lists() })
         },
@@ -59,7 +59,7 @@ export function useUpdateNote() {
 
     return useMutation({
         mutationFn: ({ id, data }: { id: string; data: TNoteUpdate }) =>
-            api.patch<TNote>(`/notes/${id}`, data),
+            noteService.updateNote(id, data),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: NOTE_QUERY_KEYS.detail(variables.id) })
             queryClient.invalidateQueries({ queryKey: NOTE_QUERY_KEYS.lists() })
@@ -74,7 +74,7 @@ export function useDeleteNote() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (id: string) => api.delete(`/notes/${id}`),
+        mutationFn: (id: string) => noteService.deleteNote(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: NOTE_QUERY_KEYS.lists() })
         },
@@ -89,7 +89,7 @@ export function useToggleNotePinned() {
 
     return useMutation({
         mutationFn: ({ id, pinned }: { id: string; pinned: boolean }) =>
-            api.patch<TNote>(`/notes/${id}`, { pinned }),
+            noteService.togglePinned(id, pinned),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: NOTE_QUERY_KEYS.detail(variables.id) })
             queryClient.invalidateQueries({ queryKey: NOTE_QUERY_KEYS.lists() })

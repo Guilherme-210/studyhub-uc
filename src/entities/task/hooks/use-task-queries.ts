@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/services'
+import { taskService } from '@services'
 import type { TTask, TTaskCreate, TTaskUpdate } from '../types'
 
 // Query Keys
@@ -22,7 +22,7 @@ export const TASK_QUERY_KEYS = {
 export function useGetTasks(filters?: Record<string, unknown>) {
     return useQuery({
         queryKey: TASK_QUERY_KEYS.list(filters),
-        queryFn: () => api.get<TTask[]>('/tasks', { params: filters }),
+        queryFn: () => taskService.getTasks(filters),
     })
 }
 
@@ -32,7 +32,7 @@ export function useGetTasks(filters?: Record<string, unknown>) {
 export function useGetTask(id: string) {
     return useQuery({
         queryKey: TASK_QUERY_KEYS.detail(id),
-        queryFn: () => api.get<TTask>(`/tasks/${id}`),
+        queryFn: () => taskService.getTask(id),
         enabled: !!id,
     })
 }
@@ -44,7 +44,7 @@ export function useCreateTask() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (data: TTaskCreate) => api.post<TTask>('/tasks', data),
+        mutationFn: (data: TTaskCreate) => taskService.createTask(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.lists() })
         },
@@ -59,7 +59,7 @@ export function useUpdateTask() {
 
     return useMutation({
         mutationFn: ({ id, data }: { id: string; data: TTaskUpdate }) =>
-            api.patch<TTask>(`/tasks/${id}`, data),
+            taskService.updateTask(id, data),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.id) })
             queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.lists() })
@@ -74,7 +74,7 @@ export function useDeleteTask() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (id: string) => api.delete(`/tasks/${id}`),
+        mutationFn: (id: string) => taskService.deleteTask(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.lists() })
         },
@@ -89,7 +89,7 @@ export function useToggleTaskCompletion() {
 
     return useMutation({
         mutationFn: ({ id, completed }: { id: string; completed: boolean }) =>
-            api.patch<TTask>(`/tasks/${id}`, { completed }),
+            taskService.toggleComplete(id, completed),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.id) })
             queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.lists() })

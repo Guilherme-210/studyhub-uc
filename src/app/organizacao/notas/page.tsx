@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useLocalStorage, useId } from '@/hooks/use-local-storage'
+import { useCreateNote, useDeleteNote, useGetNotes, useToggleNotePinned, useUpdateNote } from '@entities/note/hooks/use-note-queries'
 import type { Note } from '@/types/organization'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -51,13 +51,16 @@ const noteColors = [
 ]
 
 export default function NotesPage() {
-  const [notes, setNotes] = useLocalStorage<Note[]>('studyhub-notes', [])
+  const { data: notes = [] } = useGetNotes()
+  const createNoteMutation = useCreateNote()
+  const updateNoteMutation = useUpdateNote()
+  const deleteNoteMutation = useDeleteNote()
+  const toggleNotePinnedMutation = useToggleNotePinned()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingNote, setEditingNote] = useState<Note | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
-  const generateId = useId()
 
   const [formData, setFormData] = useState({
     title: '',
@@ -79,33 +82,23 @@ export default function NotesPage() {
   const handleSaveNote = () => {
     if (!formData.title && !formData.content) return
 
-    const now = new Date().toISOString()
-
     if (editingNote) {
-      setNotes(notes.map(n =>
-        n.id === editingNote.id
-          ? {
-            ...n,
-            title: formData.title || 'Sem título',
-            content: formData.content,
-            color: formData.color,
-            tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : undefined,
-            updatedAt: now,
-          }
-          : n
-      ))
+      updateNoteMutation.mutate({
+        id: editingNote.id,
+        data: {
+          title: formData.title || 'Sem título',
+          content: formData.content,
+          color: formData.color,
+          tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : undefined,
+        },
+      })
     } else {
-      const newNote: Note = {
-        id: generateId(),
+      createNoteMutation.mutate({
         title: formData.title || 'Sem título',
         content: formData.content,
         color: formData.color,
-        pinned: false,
         tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : undefined,
-        createdAt: now,
-        updatedAt: now,
-      }
-      setNotes([newNote, ...notes])
+      })
     }
 
     setIsDialogOpen(false)
@@ -124,13 +117,14 @@ export default function NotesPage() {
   }
 
   const handleDeleteNote = (id: string) => {
-    setNotes(notes.filter(n => n.id !== id))
+    deleteNoteMutation.mutate(id)
   }
 
   const handleTogglePin = (id: string) => {
-    setNotes(notes.map(n =>
-      n.id === id ? { ...n, pinned: !n.pinned } : n
-    ))
+    const note = notes.find(n => n.id === id)
+    if (!note) return
+
+    toggleNotePinnedMutation.mutate({ id, pinned: !note.pinned })
   }
 
   // Get all unique tags
@@ -412,7 +406,14 @@ function NoteCard({
                   {note.pinned && <Pin className="w-4 h-4 text-primary" />}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        aria-label="Mais opções da nota"
+                        title="Mais opções"
+                      >
                         <MoreVertical className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -488,7 +489,14 @@ function NoteCard({
             {note.pinned && <Pin className="w-4 h-4 text-primary" />}
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  aria-label="Mais opções da nota"
+                  title="Mais opções"
+                >
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>

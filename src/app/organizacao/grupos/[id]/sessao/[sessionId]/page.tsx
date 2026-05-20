@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useLocalStorage } from '@/hooks/use-local-storage'
+import { useLocalStorage } from '@hooks/use-local-storage'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

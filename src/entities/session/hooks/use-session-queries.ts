@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '@/services'
+import { sessionService } from '@services'
 import type { TSession, TSessionCreate, TSessionUpdate } from '../types'
 
 // Query Keys
@@ -22,7 +22,7 @@ export const SESSION_QUERY_KEYS = {
 export function useGetSessions(filters?: Record<string, unknown>) {
     return useQuery({
         queryKey: SESSION_QUERY_KEYS.list(filters),
-        queryFn: () => api.get<TSession[]>('/sessions', { params: filters }),
+        queryFn: () => sessionService.getSessions(filters),
     })
 }
 
@@ -32,7 +32,7 @@ export function useGetSessions(filters?: Record<string, unknown>) {
 export function useGetSession(id: string) {
     return useQuery({
         queryKey: SESSION_QUERY_KEYS.detail(id),
-        queryFn: () => api.get<TSession>(`/sessions/${id}`),
+        queryFn: () => sessionService.getSession(id),
         enabled: !!id,
     })
 }
@@ -44,7 +44,7 @@ export function useCreateSession() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (data: TSessionCreate) => api.post<TSession>('/sessions', data),
+        mutationFn: (data: TSessionCreate) => sessionService.createSession(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.lists() })
         },
@@ -59,7 +59,7 @@ export function useUpdateSession() {
 
     return useMutation({
         mutationFn: ({ id, data }: { id: string; data: TSessionUpdate }) =>
-            api.patch<TSession>(`/sessions/${id}`, data),
+            sessionService.updateSession(id, data),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.detail(variables.id) })
             queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.lists() })
@@ -74,7 +74,7 @@ export function useDeleteSession() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (id: string) => api.delete(`/sessions/${id}`),
+        mutationFn: (id: string) => sessionService.deleteSession(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.lists() })
         },
@@ -88,7 +88,7 @@ export function useStartSession() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (id: string) => api.post<TSession>(`/sessions/${id}/start`),
+        mutationFn: (id: string) => sessionService.startSession(id),
         onSuccess: (_, id) => {
             queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.detail(id) })
             queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.lists() })
@@ -103,7 +103,7 @@ export function useEndSession() {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: (id: string) => api.post<TSession>(`/sessions/${id}/end`),
+        mutationFn: (id: string) => sessionService.endSession(id),
         onSuccess: (_, id) => {
             queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.detail(id) })
             queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEYS.lists() })

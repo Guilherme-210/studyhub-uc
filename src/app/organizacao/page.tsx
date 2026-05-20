@@ -1,6 +1,9 @@
 'use client'
 
-import { useLocalStorage } from '@/hooks/use-local-storage'
+import { useGetNotes } from '@entities/note/hooks/use-note-queries'
+import { useGetSessions } from '@entities/session/hooks/use-session-queries'
+import { useGetTasks } from '@entities/task/hooks/use-task-queries'
+import { useDashboardPreferences } from '@hooks'
 import type { Task, CalendarEvent, Note, PomodoroSession, StudyStats } from '@/types/organization'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -21,17 +24,10 @@ import { format, isToday, parseISO, startOfDay } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 export default function OrganizationDashboard() {
-  const [tasks] = useLocalStorage<Task[]>('studyhub-tasks', [])
-  const [events] = useLocalStorage<CalendarEvent[]>('studyhub-events', [])
-  const [notes] = useLocalStorage<Note[]>('studyhub-notes', [])
-  const [sessions] = useLocalStorage<PomodoroSession[]>('studyhub-pomodoro-sessions', [])
-  const [stats] = useLocalStorage<StudyStats>('studyhub-stats', {
-    totalPomodoros: 0,
-    totalMinutes: 0,
-    currentStreak: 0,
-    longestStreak: 0,
-    tasksCompleted: 0,
-  })
+  const { data: tasks = [] } = useGetTasks()
+  const { data: notes = [] } = useGetNotes()
+  const { data: sessions = [] } = useGetSessions()
+  const { events, stats } = useDashboardPreferences()
 
   // Calculate today's stats
   const todayTasks = tasks.filter(t => t.dueDate && isToday(parseISO(t.dueDate)))
@@ -44,14 +40,14 @@ export default function OrganizationDashboard() {
   const pendingTasks = tasks.filter(t => !t.completed).slice(0, 5)
   const recentNotes = notes.slice(0, 3)
 
-  const todaySession = sessions.find(s => 
-    startOfDay(parseISO(s.date)).getTime() === startOfDay(new Date()).getTime()
+  const todaySessions = sessions.filter(s => 
+    startOfDay(parseISO(s.scheduledAt)).getTime() === startOfDay(new Date()).getTime()
   )
 
   const statCards = [
     {
-      title: 'Pomodoros Hoje',
-      value: todaySession?.completedPomodoros || 0,
+      title: 'Sessões Hoje',
+      value: todaySessions.length,
       icon: Clock,
       color: 'text-red-500',
       bgColor: 'bg-red-500/10',

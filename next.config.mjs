@@ -4,9 +4,6 @@ const nextConfig = {
     // Enforce type checking during build to avoid shipping type errors to production
     ignoreBuildErrors: false,
   },
-  images: {
-    unoptimized: true,
-  },
 }
 
 export default nextConfig
