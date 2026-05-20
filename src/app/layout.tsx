@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
-import { ThemeProvider } from '@/components/theme-provider'
+import { ThemeProvider as NextThemeProvider } from '@/components/theme-provider'
+import { ThemeProvider as MuiThemeProvider, StyledComponentsRegistry } from '@/features/theme'
+import { AuthProvider } from '@/features/auth'
 import './globals.css'
 
 const inter = Inter({
@@ -48,14 +50,20 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="bg-background" suppressHydrationWarning data-lt-installed="true">
       <body className={`${inter.variable} font-sans antialiased`}>
-        <ThemeProvider
+        <NextThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-        </ThemeProvider>
+          <StyledComponentsRegistry>
+            <MuiThemeProvider>
+              <AuthProvider>
+                {children}
+              </AuthProvider>
+            </MuiThemeProvider>
+          </StyledComponentsRegistry>
+        </NextThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

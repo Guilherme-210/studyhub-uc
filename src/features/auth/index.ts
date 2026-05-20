@@ -4,3 +4,4 @@
  */
 
 export type { TUser, TSession, TLoginCredentials, TRegisterData } from './types'
+export { AuthProvider, useAuth } from './AuthProvider'

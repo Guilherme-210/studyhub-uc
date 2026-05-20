@@ -4,7 +4,8 @@
  */
 
 export interface TRequestOptions extends RequestInit {
-    params?: Record<string, string | number | boolean>
+    // Allow unknown values in params — callers may pass different filter shapes
+    params?: Record<string, unknown>
 }
 
 export interface TApiError {
@@ -68,9 +69,15 @@ export async function apiFetch<T = unknown>(
         url += `?${searchParams.toString()}`
     }
 
-    // Default headers
+    // Attach auth token (if present) and default headers
+    let authToken: string | null = null
+    if (typeof window !== 'undefined') {
+        authToken = localStorage.getItem('studyhub:token')
+    }
+
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         ...fetchOptions.headers,
     }
 
@@ -82,6 +89,11 @@ export async function apiFetch<T = unknown>(
 
         // Handle non-OK responses
         if (!response.ok) {
+            // Special handling for unauthorized responses
+            if (response.status === 401) {
+                throw new ApiError('Unauthorized', 401, 'UNAUTHORIZED')
+            }
+
             let errorMessage = `HTTP ${response.status}: ${response.statusText}`
 
             try {
